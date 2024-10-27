@@ -6,12 +6,13 @@ from tqdm import tqdm
 from datetime import datetime as dt
 import mysql.connector
 
-def define_prefix():
-    return str(dt.today().day)+'_'+str(dt.today().month)+'_'+str(dt.today().year)
+
+def define_name():
+    return str(dt.today().day)+str(dt.today().month)+str(dt.today().year % 100)+'pricepaidcomplete'
 
 
 def fetch_csv(url, dest):
-    file_prefix = define_prefix()
+    file_name = define_name()
 
     response = requests.get(url,stream=True)
 
@@ -19,7 +20,7 @@ def fetch_csv(url, dest):
     block_size = 1024
 
     with tqdm(total=total_size,unit='B',unit_scale=True) as progress_bar:
-        with open(dest+file_prefix+'_pricepaid_complete.csv','wb') as file:
+        with open(dest+file_name+'.csv','wb') as file:
             for chunk in response.iter_content(block_size):
                 progress_bar.update(len(chunk))
                 file.write(chunk)
