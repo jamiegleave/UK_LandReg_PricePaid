@@ -3,10 +3,11 @@ import requests
 import subprocess
 from tqdm import tqdm
 from datetime import datetime as dt
-import mysql.connector
+import psycopg2
 
 
 def get_req(url):
+    
     response = requests.get(url,stream=True)
     last_mod = dt.strptime(response.headers.get('Last-Modified'),'%a, %d %b %Y %H:%M:%S %Z')
     return {
@@ -18,9 +19,9 @@ def get_req(url):
 
 
 def fetch_csv(url, dest):
-    resp_dict = get_req(url)
     
     block_size = 1024
+    resp_dict = get_req(url)
     
     with tqdm(total=resp_dict['file_sz'],unit='B',unit_scale=True) as progress_bar:
         with open(dest+resp_dict['file_name']+'.csv','wb') as file:
@@ -40,26 +41,18 @@ def copy_file_to_docker_volume(file_name, container_name, local_path, mount_path
     print(f"Successfully copied {local_path} to path {mount_path} (container {container_name})")
 
 
-def sql_commitchanges(query, user,password,host,port,database):
-    cnx = mysql.connector.connect(user=user,
-                                  password=password,
-                                  host=host,
-                                  port=port,
-                                  database=database)
+def postgresql_commitchanges(query,host,database,user,password):
     
-    cursor = cnx.cursor(buffered=True)
+    cnx = psycopg2.connect(host=host,database=database,user=user,password=password)
+    cursor = cnx.cursor()
     cursor.execute(query)
     cnx.commit()
     cnx.close()
 
 
-def sql_extractdata(query, user,password,host,port,database):
-    cnx = mysql.connector.connect(user=user,
-                                  password=password,
-                                  host=host,
-                                  port=port,
-                                  database=database)
+def postgresql_extractdata(query, user,password,host,port,database):
     
-    cursor = cnx.cursor(buffered=True)
+    cnx = psycopg2.connect(host=host,database=database,user=user,password=password)
+    cursor = cnx.cursor()
     cursor.execute(query)
     return cursor.fetchall()
