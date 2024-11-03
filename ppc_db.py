@@ -50,7 +50,7 @@ def postgresql_commitchanges(query,host,database,user,password):
     cnx.close()
 
 
-def postgresql_extractdata(query, user,password,host,port,database):
+def postgresql_extractdata(query,host,database,user,password):
     
     cnx = psycopg2.connect(host=host,database=database,user=user,password=password)
     cursor = cnx.cursor()
